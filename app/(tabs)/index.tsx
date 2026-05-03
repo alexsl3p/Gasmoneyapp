@@ -140,17 +140,20 @@ export default function DashboardScreen() {
   };
 
   const swipePan = useRef(PanResponder.create({
-    onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 20 && Math.abs(g.dx) > Math.abs(g.dy) * 1.5,
+    onStartShouldSetPanResponder: () => false,
+    onStartShouldSetPanResponderCapture: () => false,
+    onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > Math.abs(g.dy) && Math.abs(g.dx) > 10,
+    onMoveShouldSetPanResponderCapture: (_, g) => Math.abs(g.dx) > Math.abs(g.dy) * 1.5 && Math.abs(g.dx) > 15,
     onPanResponderRelease: (_, g) => {
       const ms = monthsRef.current;
       const cur = ms.indexOf(selectedMonthRef.current);
-      if (g.dx < -40 && cur < ms.length - 1) handleMonthSwipe(ms[cur + 1], 1);
-      else if (g.dx > 40 && cur > 0) handleMonthSwipe(ms[cur - 1], -1);
+      if (g.dx < -30 && cur < ms.length - 1) handleMonthSwipe(ms[cur + 1], 1);
+      else if (g.dx > 30 && cur > 0) handleMonthSwipe(ms[cur - 1], -1);
     },
   })).current;
 
   return (
-    <View style={styles.root}>
+    <View style={styles.root} {...swipePan.panHandlers}>
       <View style={styles.header}>
         <View>
           <Text style={styles.appName}>{t('appName')}</Text>
@@ -165,7 +168,6 @@ export default function DashboardScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.fuel95} />}
-        {...swipePan.panHandlers}
       >
         {/* Month selector */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.monthScroll} contentContainerStyle={styles.monthList}>
