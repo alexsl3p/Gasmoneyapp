@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   resultThumb: { width: 56, height: 56, borderRadius: Radius.sm },
   resultVal: { fontSize: FontSize.sm, color: Colors.text, fontWeight: '600', marginBottom: 2 },
   resultStation: { fontSize: FontSize.xs, color: Colors.muted, marginBottom: 2 },
-  resultFuel: { fontSize: FontSize.xs, color: Colors.fuel98, fontWeight: '600', marginBottom: 2 },
+  resultFuel: { fontSize: FontSize.xs, fontWeight: '600', marginBottom: 2 },
   resultDetail: { fontSize: FontSize.xs, color: Colors.muted },
   resultNoFields: { fontSize: FontSize.sm, color: Colors.warning, fontWeight: '500' },
   reviewBtn: {

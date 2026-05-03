@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  RefreshControl, Pressable, PanResponder,
+  RefreshControl, Pressable, PanResponder, Animated,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -118,13 +118,34 @@ export default function DashboardScreen() {
   const selectedMonthRef = useRef(selectedMonth);
   selectedMonthRef.current = selectedMonth;
 
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  const animateTransition = (direction: number, onMid: () => void) => {
+    Animated.parallel([
+      Animated.timing(slideAnim, { toValue: direction * -40, duration: 150, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
+    ]).start(() => {
+      slideAnim.setValue(direction * 40);
+      onMid();
+      Animated.parallel([
+        Animated.timing(slideAnim, { toValue: 0, duration: 180, useNativeDriver: true }),
+        Animated.timing(fadeAnim, { toValue: 1, duration: 180, useNativeDriver: true }),
+      ]).start();
+    });
+  };
+
+  const handleMonthSwipe = (m: string, direction: number) => {
+    animateTransition(direction, () => handleMonthSelect(m));
+  };
+
   const swipePan = useRef(PanResponder.create({
     onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 20 && Math.abs(g.dx) > Math.abs(g.dy) * 1.5,
     onPanResponderRelease: (_, g) => {
       const ms = monthsRef.current;
       const cur = ms.indexOf(selectedMonthRef.current);
-      if (g.dx < -40 && cur < ms.length - 1) handleMonthSelect(ms[cur + 1]);
-      else if (g.dx > 40 && cur > 0) handleMonthSelect(ms[cur - 1]);
+      if (g.dx < -40 && cur < ms.length - 1) handleMonthSwipe(ms[cur + 1], 1);
+      else if (g.dx > 40 && cur > 0) handleMonthSwipe(ms[cur - 1], -1);
     },
   })).current;
 
@@ -149,11 +170,13 @@ export default function DashboardScreen() {
         {/* Month selector */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.monthScroll} contentContainerStyle={styles.monthList}>
           {months.map((m) => (
-            <Pressable key={m} onPress={() => handleMonthSelect(m)} style={[styles.monthChip, m === selectedMonth && styles.monthChipActive]}>
+            <Pressable key={m} onPress={() => handleMonthSwipe(m, months.indexOf(m) > months.indexOf(selectedMonth) ? 1 : -1)} style={[styles.monthChip, m === selectedMonth && styles.monthChipActive]}>
               <Text style={[styles.monthChipText, m === selectedMonth && styles.monthChipTextActive]}>{formatMonth(m)}</Text>
             </Pressable>
           ))}
         </ScrollView>
+
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateX: slideAnim }] }}>
 
         {/* Total card — NET hero */}
         {summary && (
@@ -212,6 +235,8 @@ export default function DashboardScreen() {
             <Text style={styles.emptyDesc}>{t('noReceiptsDesc')}</Text>
           </View>
         )}
+
+        </Animated.View>
       </ScrollView>
     </View>
   );
