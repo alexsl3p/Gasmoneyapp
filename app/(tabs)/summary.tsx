@@ -3,7 +3,6 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, Radius } from '@/constants/theme';
 import { Card } from '@/components/ui/Card';
@@ -115,10 +114,10 @@ export default function SummaryScreen() {
       >
         {/* Month multi-select */}
         {months.length === 0 ? (
-          <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }} style={styles.empty}>
+          <View style={styles.empty}>
             <Ionicons name="bar-chart-outline" size={44} color={Colors.subtle} />
             <Text style={styles.emptyText}>No data yet</Text>
-          </MotiView>
+          </View>
         ) : (
           <>
             <Text style={styles.sectionLabel}>SELECT MONTHS</Text>
@@ -126,21 +125,15 @@ export default function SummaryScreen() {
               {months.map((m, i) => {
                 const active = selected.has(m);
                 return (
-                  <MotiView
+                  <TouchableOpacity
                     key={m}
-                    from={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ type: 'spring', delay: i * 30 }}
+                    onPress={() => toggleMonth(m)}
+                    style={[styles.monthChip, active && styles.monthChipActive]}
+                    activeOpacity={0.7}
                   >
-                    <TouchableOpacity
-                      onPress={() => toggleMonth(m)}
-                      style={[styles.monthChip, active && styles.monthChipActive]}
-                      activeOpacity={0.7}
-                    >
-                      {active && <Ionicons name="checkmark" size={12} color={Colors.background} style={{ marginRight: 4 }} />}
-                      <Text style={[styles.monthChipText, active && styles.monthChipTextActive]}>{formatMonth(m)}</Text>
-                    </TouchableOpacity>
-                  </MotiView>
+                    {active && <Ionicons name="checkmark" size={12} color={Colors.background} style={{ marginRight: 4 }} />}
+                    <Text style={[styles.monthChipText, active && styles.monthChipTextActive]}>{formatMonth(m)}</Text>
+                  </TouchableOpacity>
                 );
               })}
             </View>
@@ -148,8 +141,7 @@ export default function SummaryScreen() {
             {selected.size > 0 && aggregate.gross > 0 && (
               <>
                 {/* Total */}
-                <MotiView from={{ opacity: 0, translateY: 12 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 400 }}>
-                  <Card style={styles.totalCard}>
+                <Card style={styles.totalCard}>
                     <Text style={styles.totalLabel}>Total Fuel Cost</Text>
                     <Text style={styles.totalGross}>{aggregate.gross.toFixed(2)} €</Text>
                     <View style={styles.divider} />
@@ -170,11 +162,9 @@ export default function SummaryScreen() {
                       </View>
                     </View>
                   </Card>
-                </MotiView>
 
                 {/* Per-fuel breakdown */}
-                <MotiView from={{ opacity: 0, translateY: 16 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 420, delay: 80 }}>
-                  <Card style={styles.breakdownCard}>
+                <Card style={styles.breakdownCard}>
                     <Text style={styles.sectionLabel}>BREAKDOWN BY FUEL</Text>
 
                     <SummarySection
@@ -193,11 +183,9 @@ export default function SummaryScreen() {
                       summary={{ ...aggregate, grossAmount: aggregate.gross98, netAmount: aggregate.net98, vatAmount: aggregate.vat98, liters: aggregate.liters98, avgPricePerLiter: avg98, count: aggregate.count98 }}
                     />
                   </Card>
-                </MotiView>
 
                 {/* Per-month breakdown */}
                 {summaries.length > 1 && (
-                  <MotiView from={{ opacity: 0, translateY: 16 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 440, delay: 140 }}>
                     <Card>
                       <Text style={styles.sectionLabel}>MONTH BY MONTH</Text>
                       {summaries.map((s, i) => (
@@ -225,7 +213,6 @@ export default function SummaryScreen() {
                         </View>
                       ))}
                     </Card>
-                  </MotiView>
                 )}
               </>
             )}

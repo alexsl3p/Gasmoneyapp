@@ -5,7 +5,6 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, Radius } from '@/constants/theme';
 import { ScanningOverlay, Shimmer } from '@/components/animations/ShimmerEffect';
@@ -93,13 +92,7 @@ export default function UploadScreen() {
             </View>
           ) : (
             <View style={styles.pickerPlaceholder}>
-              <MotiView
-                from={{ scale: 0.9, opacity: 0.5 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', loop: true, repeatReverse: true, duration: 1800 }}
-              >
-                <Ionicons name="image-outline" size={56} color={Colors.subtle} />
-              </MotiView>
+                  <Ionicons name="image-outline" size={56} color={Colors.subtle} />
               <Text style={styles.placeholderTitle}>Pick a screenshot</Text>
               <Text style={styles.placeholderDesc}>Tap to select a fuel receipt from your gallery</Text>
             </View>
@@ -108,18 +101,14 @@ export default function UploadScreen() {
 
         {/* Status text */}
         {stage === 'scanning' && (
-          <MotiView
-            from={{ opacity: 0, translateY: 8 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            style={styles.statusBox}
-          >
+          <View style={styles.statusBox}>
             <ActivityIndicator color={Colors.fuel95} size="small" />
             <Text style={styles.statusText}>Scanning receipt with ML Kit…</Text>
-          </MotiView>
+          </View>
         )}
 
         {stage === 'done' && (
-          <MotiView from={{ opacity: 0, translateY: 8 }} animate={{ opacity: 1, translateY: 0 }} style={styles.parsedBox}>
+          <View style={styles.parsedBox}>
             <View style={styles.parsedHeader}>
               <Ionicons name="checkmark-circle" size={18} color={Colors.success} />
               <Text style={styles.parsedTitle}>OCR complete — review & confirm fields</Text>
@@ -135,7 +124,7 @@ export default function UploadScreen() {
             {Object.keys(parsed).length === 0 && (
               <Text style={styles.noFieldsText}>No fields extracted automatically — fill them in manually.</Text>
             )}
-          </MotiView>
+          </View>
         )}
 
         {/* Shimmer skeleton while scanning */}

@@ -4,7 +4,6 @@ import {
   RefreshControl, Pressable,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, Radius } from '@/constants/theme';
 import { Card } from '@/components/ui/Card';
@@ -115,7 +114,6 @@ export default function DashboardScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.appName}>Fuel Ledger</Text>
@@ -135,91 +133,74 @@ export default function DashboardScreen() {
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.fuel95} />}
       >
-        {/* Month selector */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.monthScroll} contentContainerStyle={styles.monthList}>
-          {months.map((m, i) => (
-            <MotiView
+          {months.map((m) => (
+            <Pressable
               key={m}
-              from={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: 'spring', delay: i * 40 }}
+              onPress={() => handleMonthSelect(m)}
+              style={[styles.monthChip, m === selectedMonth && styles.monthChipActive]}
             >
-              <Pressable
-                onPress={() => handleMonthSelect(m)}
-                style={[styles.monthChip, m === selectedMonth && styles.monthChipActive]}
-              >
-                <Text style={[styles.monthChipText, m === selectedMonth && styles.monthChipTextActive]}>
-                  {formatMonth(m)}
-                </Text>
-              </Pressable>
-            </MotiView>
+              <Text style={[styles.monthChipText, m === selectedMonth && styles.monthChipTextActive]}>
+                {formatMonth(m)}
+              </Text>
+            </Pressable>
           ))}
         </ScrollView>
 
-        {/* Combined total */}
         {summary && (
-          <MotiView from={{ opacity: 0, translateY: 12 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 400 }}>
-            <Card style={styles.totalCard}>
-              <Text style={styles.totalLabel}>Total spent</Text>
-              <Text style={styles.totalAmount}>{summary.combined.grossAmount.toFixed(2)} €</Text>
-              <View style={styles.totalRow}>
-                <View style={styles.totalStat}>
-                  <Text style={styles.totalStatLabel}>Net</Text>
-                  <Text style={styles.totalStatValue}>{summary.combined.netAmount.toFixed(2)} €</Text>
-                </View>
-                <View style={styles.totalStatDivider} />
-                <View style={styles.totalStat}>
-                  <Text style={styles.totalStatLabel}>VAT</Text>
-                  <Text style={styles.totalStatValue}>{summary.combined.vatAmount.toFixed(2)} €</Text>
-                </View>
-                <View style={styles.totalStatDivider} />
-                <View style={styles.totalStat}>
-                  <Text style={styles.totalStatLabel}>Liters</Text>
-                  <Text style={styles.totalStatValue}>{summary.combined.liters.toFixed(2)} L</Text>
-                </View>
+          <Card style={styles.totalCard}>
+            <Text style={styles.totalLabel}>Total spent</Text>
+            <Text style={styles.totalAmount}>{summary.combined.grossAmount.toFixed(2)} €</Text>
+            <View style={styles.totalRow}>
+              <View style={styles.totalStat}>
+                <Text style={styles.totalStatLabel}>Net</Text>
+                <Text style={styles.totalStatValue}>{summary.combined.netAmount.toFixed(2)} €</Text>
               </View>
-            </Card>
-          </MotiView>
+              <View style={styles.totalStatDivider} />
+              <View style={styles.totalStat}>
+                <Text style={styles.totalStatLabel}>VAT</Text>
+                <Text style={styles.totalStatValue}>{summary.combined.vatAmount.toFixed(2)} €</Text>
+              </View>
+              <View style={styles.totalStatDivider} />
+              <View style={styles.totalStat}>
+                <Text style={styles.totalStatLabel}>Liters</Text>
+                <Text style={styles.totalStatValue}>{summary.combined.liters.toFixed(2)} L</Text>
+              </View>
+            </View>
+          </Card>
         )}
 
-        {/* 95 and 98 cards */}
         {summary && (
           <View style={styles.fuelRow}>
-            <MotiView from={{ opacity: 0, translateY: 16 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 420, delay: 60 }} style={{ flex: 1 }}>
+            <View style={{ flex: 1 }}>
               <FuelCard title="95" summary={summary.fuel95} accent={Colors.fuel95} />
-            </MotiView>
-            <MotiView from={{ opacity: 0, translateY: 16 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 420, delay: 120 }} style={{ flex: 1 }}>
+            </View>
+            <View style={{ flex: 1 }}>
               <FuelCard title="98" summary={summary.fuel98} accent={Colors.fuel98} />
-            </MotiView>
+            </View>
           </View>
         )}
 
-        {/* Recent receipts */}
         {recentReceipts.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>Recent receipts</Text>
             <Card padding={0} style={styles.recentCard}>
               {recentReceipts.map((r, i) => (
-                <MotiView
-                  key={r.id}
-                  from={{ opacity: 0, translateX: -10 }}
-                  animate={{ opacity: 1, translateX: 0 }}
-                  transition={{ type: 'timing', duration: 300, delay: i * 50 }}
-                >
+                <View key={r.id}>
                   {i > 0 && <View style={styles.rowDivider} />}
                   <ReceiptRow receipt={r} onPress={() => router.push(`/edit/${r.id}`)} />
-                </MotiView>
+                </View>
               ))}
             </Card>
           </>
         )}
 
         {recentReceipts.length === 0 && (
-          <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 200 }} style={styles.emptyState}>
+          <View style={styles.emptyState}>
             <Ionicons name="receipt-outline" size={48} color={Colors.subtle} />
             <Text style={styles.emptyTitle}>No receipts yet</Text>
             <Text style={styles.emptyDesc}>Tap + to upload your first fuel receipt screenshot</Text>
-          </MotiView>
+          </View>
         )}
       </ScrollView>
     </View>

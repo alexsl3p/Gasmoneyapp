@@ -1,13 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  Easing,
-  interpolate,
-} from 'react-native-reanimated';
+import React, { useEffect, useRef } from 'react';
+import { View, Animated, StyleSheet, ViewStyle } from 'react-native';
 import { Colors } from '@/constants/theme';
 
 interface ShimmerProps {
@@ -17,55 +9,44 @@ interface ShimmerProps {
 }
 
 export function Shimmer({ width = '100%', height = 16, style }: ShimmerProps) {
-  const anim = useSharedValue(0);
+  const anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    anim.value = withRepeat(
-      withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(anim, { toValue: 1, duration: 600, useNativeDriver: true }),
+        Animated.timing(anim, { toValue: 0, duration: 600, useNativeDriver: true }),
+      ])
+    ).start();
   }, []);
 
-  const shimmerStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(anim.value, [0, 0.5, 1], [0.3, 0.8, 0.3]),
-  }));
+  const opacity = anim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.8] });
 
   return (
     <Animated.View
-      style={[
-        {
-          width: width as any,
-          height,
-          borderRadius: 6,
-          backgroundColor: Colors.surface,
-        },
-        shimmerStyle,
-        style,
-      ]}
+      style={[{ width: width as any, height, borderRadius: 6, backgroundColor: Colors.surface, opacity }, style]}
     />
   );
 }
 
 export function ScanningOverlay() {
-  const anim = useSharedValue(0);
+  const anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    anim.value = withRepeat(
-      withTiming(1, { duration: 1800, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(anim, { toValue: 1, duration: 1800, useNativeDriver: true }),
+        Animated.timing(anim, { toValue: 0, duration: 0, useNativeDriver: true }),
+      ])
+    ).start();
   }, []);
 
-  const lineStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: interpolate(anim.value, [0, 1], [0, 200]) }],
-    opacity: interpolate(anim.value, [0, 0.1, 0.9, 1], [0, 1, 1, 0]),
-  }));
+  const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [0, 200] });
+  const opacity = anim.interpolate({ inputRange: [0, 0.05, 0.95, 1], outputRange: [0, 1, 1, 0] });
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Animated.View style={[styles.scanLine, lineStyle]} />
+      <Animated.View style={[styles.scanLine, { transform: [{ translateY }], opacity }]} />
     </View>
   );
 }
@@ -74,9 +55,6 @@ const styles = StyleSheet.create({
   scanLine: {
     height: 2,
     backgroundColor: Colors.fuel95,
-    shadowColor: Colors.fuel95,
-    shadowOpacity: 0.9,
-    shadowRadius: 8,
     elevation: 8,
   },
 });

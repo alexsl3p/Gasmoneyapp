@@ -4,7 +4,6 @@ import {
   ScrollView, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, FontSize, Radius } from '@/constants/theme';
@@ -142,16 +141,16 @@ export default function ReviewScreen() {
 
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {missingRequired && (
-            <MotiView from={{ opacity: 0, translateY: -6 }} animate={{ opacity: 1, translateY: 0 }} style={styles.warningBanner}>
+            <View style={styles.warningBanner}>
               <Ionicons name="warning-outline" size={16} color={Colors.warning} />
               <Text style={styles.warningText}>Some required fields are missing or invalid</Text>
-            </MotiView>
+            </View>
           )}
           {!missingRequired && missingOptional && (
-            <MotiView from={{ opacity: 0, translateY: -6 }} animate={{ opacity: 1, translateY: 0 }} style={styles.infoBanner}>
+            <View style={styles.infoBanner}>
               <Ionicons name="information-circle-outline" size={16} color={Colors.muted} />
               <Text style={styles.infoText}>Time and station are optional but helpful</Text>
-            </MotiView>
+            </View>
           )}
 
           <Text style={styles.sectionLabel}>DATE & LOCATION</Text>
@@ -166,7 +165,7 @@ export default function ReviewScreen() {
 
           {/* VAT summary */}
           {grossNum > 0 && (
-            <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }} style={styles.vatCard}>
+            <View style={styles.vatCard}>
               <Text style={styles.vatTitle}>VAT Breakdown (24%)</Text>
               <View style={styles.vatRow}>
                 <Text style={styles.vatLabel}>Gross</Text>
@@ -186,7 +185,7 @@ export default function ReviewScreen() {
                   <Text style={[styles.vatValue, { color: Colors.success }]}>{pricePerLiter.toFixed(3)} €</Text>
                 </View>
               )}
-            </MotiView>
+            </View>
           )}
         </ScrollView>
 

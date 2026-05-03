@@ -6,7 +6,6 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { MotiView } from 'moti';
 import { Colors, Spacing, FontSize, Radius } from '@/constants/theme';
 import { getReceiptById, updateReceipt, deleteReceipt } from '@/lib/storage';
 import { calculateVat } from '@/lib/vat';
@@ -146,7 +145,7 @@ export default function EditScreen() {
           <Field label="Paid (€)" value={grossAmount} onChangeText={setGrossAmount} keyboardType="decimal-pad" />
 
           {grossNum > 0 && (
-            <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }} style={styles.vatCard}>
+            <View style={styles.vatCard}>
               <Text style={styles.vatTitle}>VAT BREAKDOWN (24%)</Text>
               {([
                 ['Gross', `${grossNum.toFixed(2)} €`],
@@ -159,7 +158,7 @@ export default function EditScreen() {
                   <Text style={styles.vatValue}>{v}</Text>
                 </View>
               ))}
-            </MotiView>
+            </View>
           )}
         </ScrollView>
 

@@ -4,7 +4,6 @@ import {
   RefreshControl, FlatList,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, Radius } from '@/constants/theme';
 import { Card } from '@/components/ui/Card';
@@ -109,20 +108,15 @@ export default function HistoryScreen() {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }} style={styles.empty}>
+          <View style={styles.empty}>
             <Ionicons name="receipt-outline" size={44} color={Colors.subtle} />
             <Text style={styles.emptyText}>No receipts match your filters</Text>
-          </MotiView>
+          </View>
         }
-        renderItem={({ item: r, index }) => {
+        renderItem={({ item: r }) => {
           const accent = r.fuelType === '95' ? Colors.fuel95 : Colors.fuel98;
           return (
-            <MotiView
-              from={{ opacity: 0, translateY: 10 }}
-              animate={{ opacity: 1, translateY: 0 }}
-              transition={{ type: 'timing', duration: 260, delay: index * 40 }}
-              style={{ marginBottom: Spacing.sm }}
-            >
+            <View style={{ marginBottom: Spacing.sm }}>
               <TouchableOpacity onPress={() => router.push(`/edit/${r.id}`)} activeOpacity={0.75}>
                 <Card>
                   <View style={styles.receiptHeader}>
@@ -153,7 +147,7 @@ export default function HistoryScreen() {
                   </View>
                 </Card>
               </TouchableOpacity>
-            </MotiView>
+            </View>
           );
         }}
       />
