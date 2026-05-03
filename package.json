@@ -11,6 +11,7 @@
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
     "@motify/components": "^0.18.0",
+    "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-native-ml-kit/text-recognition": "^2.0.0",
     "babel-preset-expo": "^55.0.19",
     "expo": "~54.0.33",

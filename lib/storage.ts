@@ -1,115 +1,71 @@
-import * as SQLite from 'expo-sqlite';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Receipt, FuelSummary, MonthSummary } from './types';
 import { round2 } from './vat';
 
-const DB_NAME = 'fuelledger.db';
+const KEY = 'receipts_v1';
 
-let _db: SQLite.SQLiteDatabase | null = null;
+async function loadAll(): Promise<Receipt[]> {
+  const raw = await AsyncStorage.getItem(KEY);
+  if (!raw) return [];
+  return JSON.parse(raw) as Receipt[];
+}
 
-async function getDb(): Promise<SQLite.SQLiteDatabase> {
-  if (_db) return _db;
-  _db = await SQLite.openDatabaseAsync(DB_NAME);
-  await _db.execAsync('PRAGMA journal_mode = WAL;');
-  await _db.execAsync(`
-    CREATE TABLE IF NOT EXISTS receipts (
-      id TEXT PRIMARY KEY,
-      date TEXT NOT NULL,
-      time TEXT,
-      station TEXT,
-      fuelType TEXT NOT NULL,
-      liters REAL NOT NULL,
-      grossAmount REAL NOT NULL,
-      netAmount REAL NOT NULL,
-      vatAmount REAL NOT NULL,
-      pricePerLiter REAL NOT NULL,
-      imageUri TEXT,
-      rawOcrText TEXT,
-      createdAt TEXT NOT NULL
-    );
-  `);
-  return _db;
+async function saveAll(receipts: Receipt[]): Promise<void> {
+  await AsyncStorage.setItem(KEY, JSON.stringify(receipts));
 }
 
 export async function saveReceipt(receipt: Receipt): Promise<void> {
-  const db = await getDb();
-  await db.runAsync(
-    `INSERT INTO receipts
-      (id, date, time, station, fuelType, liters, grossAmount, netAmount, vatAmount, pricePerLiter, imageUri, rawOcrText, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    receipt.id, receipt.date, receipt.time ?? null, receipt.station ?? null,
-    receipt.fuelType, receipt.liters, receipt.grossAmount, receipt.netAmount,
-    receipt.vatAmount, receipt.pricePerLiter, receipt.imageUri ?? null,
-    receipt.rawOcrText ?? null, receipt.createdAt,
-  );
+  const all = await loadAll();
+  all.unshift(receipt);
+  await saveAll(all);
 }
 
 export async function updateReceipt(receipt: Receipt): Promise<void> {
-  const db = await getDb();
-  await db.runAsync(
-    `UPDATE receipts SET
-      date=?, time=?, station=?, fuelType=?, liters=?, grossAmount=?, netAmount=?,
-      vatAmount=?, pricePerLiter=?, imageUri=?, rawOcrText=?
-     WHERE id=?`,
-    receipt.date, receipt.time ?? null, receipt.station ?? null, receipt.fuelType,
-    receipt.liters, receipt.grossAmount, receipt.netAmount, receipt.vatAmount,
-    receipt.pricePerLiter, receipt.imageUri ?? null, receipt.rawOcrText ?? null,
-    receipt.id,
-  );
+  const all = await loadAll();
+  const idx = all.findIndex(r => r.id === receipt.id);
+  if (idx !== -1) all[idx] = receipt;
+  await saveAll(all);
 }
 
 export async function deleteReceipt(id: string): Promise<void> {
-  const db = await getDb();
-  await db.runAsync('DELETE FROM receipts WHERE id=?', id);
+  const all = await loadAll();
+  await saveAll(all.filter(r => r.id !== id));
 }
 
 export async function getReceiptById(id: string): Promise<Receipt | null> {
-  const db = await getDb();
-  const row = await db.getFirstAsync<Receipt>('SELECT * FROM receipts WHERE id=?', id);
-  return row ?? null;
+  const all = await loadAll();
+  return all.find(r => r.id === id) ?? null;
 }
 
 export async function getReceiptsByMonth(month: string): Promise<Receipt[]> {
-  const db = await getDb();
-  return db.getAllAsync<Receipt>(
-    "SELECT * FROM receipts WHERE date LIKE ? ORDER BY date DESC, time DESC",
-    `${month}%`,
-  );
+  const all = await loadAll();
+  return all.filter(r => r.date.startsWith(month));
 }
 
 export async function getAllReceipts(): Promise<Receipt[]> {
-  const db = await getDb();
-  return db.getAllAsync<Receipt>('SELECT * FROM receipts ORDER BY date DESC, time DESC');
+  return loadAll();
 }
 
 export async function getAvailableMonths(): Promise<string[]> {
-  const db = await getDb();
-  const rows = await db.getAllAsync<{ month: string }>(
-    "SELECT DISTINCT substr(date, 1, 7) AS month FROM receipts ORDER BY month DESC",
-  );
-  return rows.map(r => r.month);
+  const all = await loadAll();
+  const months = new Set(all.map(r => r.date.slice(0, 7)));
+  return Array.from(months).sort((a, b) => b.localeCompare(a));
 }
 
 export async function getMonthlySummary(months: string[]): Promise<MonthSummary[]> {
   if (months.length === 0) return [];
-  const db = await getDb();
-  const results: MonthSummary[] = [];
-  for (const month of months) {
-    const rows = await db.getAllAsync<Receipt>(
-      "SELECT * FROM receipts WHERE date LIKE ?",
-      `${month}%`,
-    );
-    results.push(buildSummary(month, rows));
-  }
-  return results;
+  const all = await loadAll();
+  return months.map(month => {
+    const rows = all.filter(r => r.date.startsWith(month));
+    return buildSummary(month, rows);
+  });
 }
 
 function buildSummary(month: string, rows: Receipt[]): MonthSummary {
-  const fuel95 = rows.filter(r => r.fuelType === '95');
-  const fuel98 = rows.filter(r => r.fuelType === '98');
   return {
     month,
-    fuel95: aggregateReceipts(fuel95),
-    fuel98: aggregateReceipts(fuel98),
+    fuel95: aggregateReceipts(rows.filter(r => r.fuelType === '95')),
+    fuel98: aggregateReceipts(rows.filter(r => r.fuelType === '98')),
     combined: aggregateReceipts(rows),
   };
 }
