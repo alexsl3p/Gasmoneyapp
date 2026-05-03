@@ -142,23 +142,24 @@ export default function SummaryScreen() {
               <>
                 {/* Total */}
                 <Card style={styles.totalCard}>
-                    <Text style={styles.totalLabel}>Total Fuel Cost</Text>
-                    <Text style={styles.totalGross}>{aggregate.gross.toFixed(2)} €</Text>
+                    <Text style={styles.totalLabel}>NET (total paid)</Text>
+                    <Text style={styles.totalNet}>{aggregate.net.toFixed(2)} €</Text>
+                    <Text style={styles.totalGrossSub}>Gross: {aggregate.gross.toFixed(2)} €</Text>
                     <View style={styles.divider} />
                     <View style={styles.totalRow}>
                       <View style={styles.totalStat}>
-                        <Text style={styles.totalStatVal}>{aggregate.net.toFixed(2)} €</Text>
-                        <Text style={styles.totalStatLbl}>Net</Text>
-                      </View>
-                      <View style={styles.totalStatDivider} />
-                      <View style={styles.totalStat}>
-                        <Text style={styles.totalStatVal}>{aggregate.vat.toFixed(2)} €</Text>
+                        <Text style={[styles.totalStatVal, { color: '#F59E0B' }]}>{aggregate.vat.toFixed(2)} €</Text>
                         <Text style={styles.totalStatLbl}>VAT (24%)</Text>
                       </View>
                       <View style={styles.totalStatDivider} />
                       <View style={styles.totalStat}>
                         <Text style={styles.totalStatVal}>{aggregate.liters.toFixed(2)} L</Text>
                         <Text style={styles.totalStatLbl}>Liters</Text>
+                      </View>
+                      <View style={styles.totalStatDivider} />
+                      <View style={styles.totalStat}>
+                        <Text style={[styles.totalStatVal, { color: '#10B981' }]}>−{aggregate.vat.toFixed(2)} €</Text>
+                        <Text style={styles.totalStatLbl}>VAT saved</Text>
                       </View>
                     </View>
                   </Card>
@@ -246,7 +247,9 @@ const styles = StyleSheet.create({
   monthChipText: { fontSize: FontSize.xs, color: Colors.muted, fontWeight: '500' },
   monthChipTextActive: { color: Colors.background, fontWeight: '600' },
   totalCard: { marginBottom: Spacing.md },
-  totalLabel: { fontSize: FontSize.sm, color: Colors.muted, marginBottom: Spacing.sm },
+  totalLabel: { fontSize: FontSize.xs, color: Colors.muted, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4 },
+  totalNet: { fontSize: 48, fontWeight: '800', color: Colors.text, letterSpacing: -2, lineHeight: 54 },
+  totalGrossSub: { fontSize: FontSize.md, color: Colors.muted, marginTop: 2, marginBottom: Spacing.lg },
   totalGross: { fontSize: FontSize.display, fontWeight: '700', color: Colors.text, letterSpacing: -1, marginBottom: Spacing.lg },
   divider: { height: 1, backgroundColor: Colors.border },
   totalRow: { flexDirection: 'row', alignItems: 'center', marginTop: Spacing.lg },

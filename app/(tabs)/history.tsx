@@ -169,8 +169,8 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.surface,
   },
   filterChipText: { fontSize: FontSize.xs, fontWeight: '600', letterSpacing: 0.3 },
-  monthScroll: { marginBottom: Spacing.md },
-  monthList: { paddingHorizontal: Spacing.xl, gap: Spacing.xs },
+  monthScroll: { marginBottom: Spacing.md, flexGrow: 0 },
+  monthList: { paddingHorizontal: Spacing.xl, gap: Spacing.xs, paddingVertical: 2 },
   monthChip: {
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: Radius.full,
     backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border,

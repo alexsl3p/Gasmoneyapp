@@ -1,6 +1,6 @@
 const translations = {
   en: {
-    appName: 'Fuel Ledger',
+    appName: 'Gas Money',
     appSub: 'Track your fuel costs',
     totalSpent: 'Total spent',
     net: 'Net',
@@ -79,7 +79,7 @@ const translations = {
     summary: 'Summary',
   },
   ru: {
-    appName: 'Fuel Ledger',
+    appName: 'Gas Money',
     appSub: 'Учёт расходов на топливо',
     totalSpent: 'Итого потрачено',
     net: 'Без НДС',
@@ -158,7 +158,7 @@ const translations = {
     summary: 'Сводка',
   },
   et: {
-    appName: 'Fuel Ledger',
+    appName: 'Gas Money',
     appSub: 'Jälgi kütusekulu',
     totalSpent: 'Kokku kulutatud',
     net: 'Ilma KM',
@@ -242,11 +242,6 @@ type Lang = keyof typeof translations;
 type Keys = keyof typeof translations.en;
 
 function detectLang(): Lang {
-  try {
-    const locale = Intl.DateTimeFormat().resolvedOptions().locale ?? '';
-    if (locale.startsWith('ru')) return 'ru';
-    if (locale.startsWith('et')) return 'et';
-  } catch {}
   return 'en';
 }
 

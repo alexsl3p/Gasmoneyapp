@@ -103,7 +103,8 @@ export function parseReceiptText(text: string): ParsedReceipt {
     }
   }
   if (!result.station) {
-    const m = text.match(/([A-ZÄÖÜÕ][a-zA-ZäöüõÄÖÜÕ\s]{2,30}(?:ATM|Tankla|jaam))/);
+    // Only match known station patterns directly (no multiword prefix)
+    const m = text.match(/\b([A-ZÄÖÜÕ][a-zA-ZäöüõÄÖÜÕ]{2,20}\s+ATM)\b/);
     if (m) result.station = m[1].trim();
   }
 

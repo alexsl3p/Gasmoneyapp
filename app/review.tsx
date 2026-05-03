@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
-  ScrollView, Alert, KeyboardAvoidingView, Platform,
+  ScrollView, Alert, KeyboardAvoidingView, Platform, Image,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { t } from '@/lib/i18n';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize, Radius } from '@/constants/theme';
 import { saveReceipt } from '@/lib/storage';
 import { calculateVat } from '@/lib/vat';
@@ -17,15 +17,10 @@ function generateId(): string {
 }
 
 function Field({
-  label, value, onChangeText, placeholder, keyboardType = 'default',
-  warning,
+  label, value, onChangeText, placeholder, keyboardType = 'default', warning,
 }: {
-  label: string;
-  value: string;
-  onChangeText: (t: string) => void;
-  placeholder?: string;
-  keyboardType?: 'default' | 'numeric' | 'decimal-pad';
-  warning?: boolean;
+  label: string; value: string; onChangeText: (t: string) => void;
+  placeholder?: string; keyboardType?: 'default' | 'numeric' | 'decimal-pad'; warning?: boolean;
 }) {
   return (
     <View style={styles.fieldWrap}>
@@ -48,19 +43,17 @@ function FuelToggle({ value, onChange }: { value: FuelType | ''; onChange: (v: F
     <View style={styles.fieldWrap}>
       <Text style={styles.fieldLabel}>Fuel Type *</Text>
       <View style={styles.toggleRow}>
-        {(['95', '98'] as FuelType[]).map(t => {
-          const accent = t === '95' ? Colors.fuel95 : Colors.fuel98;
-          const active = value === t;
+        {(['95', '98'] as FuelType[]).map(ft => {
+          const accent = ft === '95' ? Colors.fuel95 : Colors.fuel98;
+          const active = value === ft;
           return (
             <TouchableOpacity
-              key={t}
+              key={ft}
               style={[styles.toggleBtn, { borderColor: active ? accent : Colors.border, backgroundColor: active ? `${accent}18` : 'transparent' }]}
-              onPress={() => { Haptics.selectionAsync(); onChange(t); }}
+              onPress={() => { Haptics.selectionAsync(); onChange(ft); }}
               activeOpacity={0.7}
             >
-              <Text style={[styles.toggleText, { color: active ? accent : Colors.muted }]}>
-                Bensiin {t}
-              </Text>
+              <Text style={[styles.toggleText, { color: active ? accent : Colors.muted }]}>Bensiin {ft}</Text>
             </TouchableOpacity>
           );
         })}
@@ -71,6 +64,7 @@ function FuelToggle({ value, onChange }: { value: FuelType | ''; onChange: (v: F
 
 export default function ReviewScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     imageUri: string; rawOcrText: string;
     date: string; time: string; station: string;
@@ -87,14 +81,13 @@ export default function ReviewScreen() {
   const [liters, setLiters] = useState(params.liters ?? '');
   const [grossAmount, setGrossAmount] = useState(params.grossAmount ?? '');
   const [saving, setSaving] = useState(false);
+  const [imgExpanded, setImgExpanded] = useState(false);
 
   const litersNum = parseFloat(liters) || 0;
   const grossNum = parseFloat(grossAmount) || 0;
   const { net, vat } = calculateVat(grossNum);
   const pricePerLiter = litersNum > 0 && grossNum > 0 ? grossNum / litersNum : 0;
-
   const missingRequired = !date || !fuelType || litersNum === 0 || grossNum === 0;
-  const missingOptional = !time || !station;
 
   const handleSave = async () => {
     if (!fuelType) { Alert.alert('Missing field', 'Please select a fuel type.'); return; }
@@ -105,15 +98,9 @@ export default function ReviewScreen() {
     setSaving(true);
     try {
       const receipt: Receipt = {
-        id: generateId(),
-        date,
-        time: time || undefined,
-        station: station || undefined,
-        fuelType,
-        liters: litersNum,
-        grossAmount: grossNum,
-        netAmount: net,
-        vatAmount: vat,
+        id: generateId(), date,
+        time: time || undefined, station: station || undefined, fuelType,
+        liters: litersNum, grossAmount: grossNum, netAmount: net, vatAmount: vat,
         pricePerLiter: Math.round(pricePerLiter * 1000) / 1000,
         imageUri: params.imageUri || undefined,
         rawOcrText: params.rawOcrText || undefined,
@@ -121,7 +108,6 @@ export default function ReviewScreen() {
       };
       await saveReceipt(receipt);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      // If there's a queue of remaining receipts, go to next review
       if (params.queue) {
         const remaining = JSON.parse(params.queue) as Array<{uri: string; raw: string; parsed: any}>;
         if (remaining.length > 0) {
@@ -129,12 +115,9 @@ export default function ReviewScreen() {
           router.replace({
             pathname: '/review',
             params: {
-              imageUri: next.uri,
-              rawOcrText: next.raw,
-              date: next.parsed.date ?? '',
-              time: next.parsed.time ?? '',
-              station: next.parsed.station ?? '',
-              fuelType: next.parsed.fuelType ?? '',
+              imageUri: next.uri, rawOcrText: next.raw,
+              date: next.parsed.date ?? '', time: next.parsed.time ?? '',
+              station: next.parsed.station ?? '', fuelType: next.parsed.fuelType ?? '',
               liters: next.parsed.liters?.toString() ?? '',
               grossAmount: next.parsed.grossAmount?.toString() ?? '',
               queue: remaining.length > 1 ? JSON.stringify(remaining.slice(1)) : '',
@@ -146,12 +129,13 @@ export default function ReviewScreen() {
       router.dismissAll();
       router.replace('/(tabs)/');
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      Alert.alert('Save failed', msg);
+      Alert.alert('Save failed', e instanceof Error ? e.message : String(e));
     } finally {
       setSaving(false);
     }
   };
+
+  const footerHeight = 52 + Spacing.lg + insets.bottom + 16;
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -164,17 +148,27 @@ export default function ReviewScreen() {
           <View style={{ width: 40 }} />
         </View>
 
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[styles.content, { paddingBottom: footerHeight + 16 }]} showsVerticalScrollIndicator={false}>
+
+          {/* Receipt screenshot — tap to expand */}
+          {params.imageUri ? (
+            <TouchableOpacity onPress={() => setImgExpanded(e => !e)} activeOpacity={0.85} style={styles.imgWrap}>
+              <Image
+                source={{ uri: params.imageUri }}
+                style={[styles.receiptImg, imgExpanded && styles.receiptImgExpanded]}
+                resizeMode="contain"
+              />
+              <View style={styles.imgHint}>
+                <Ionicons name={imgExpanded ? 'chevron-up' : 'chevron-down'} size={12} color={Colors.muted} />
+                <Text style={styles.imgHintText}>{imgExpanded ? 'Collapse' : 'Tap to expand screenshot'}</Text>
+              </View>
+            </TouchableOpacity>
+          ) : null}
+
           {missingRequired && (
             <View style={styles.warningBanner}>
               <Ionicons name="warning-outline" size={16} color={Colors.warning} />
               <Text style={styles.warningText}>Some required fields are missing or invalid</Text>
-            </View>
-          )}
-          {!missingRequired && missingOptional && (
-            <View style={styles.infoBanner}>
-              <Ionicons name="information-circle-outline" size={16} color={Colors.muted} />
-              <Text style={styles.infoText}>Time and station are optional but helpful</Text>
             </View>
           )}
 
@@ -188,22 +182,12 @@ export default function ReviewScreen() {
           <Field label="Liters" value={liters} onChangeText={setLiters} placeholder="0.00" keyboardType="decimal-pad" warning={litersNum === 0} />
           <Field label="Paid (€)" value={grossAmount} onChangeText={setGrossAmount} placeholder="0.00" keyboardType="decimal-pad" warning={grossNum === 0} />
 
-          {/* VAT summary */}
           {grossNum > 0 && (
             <View style={styles.vatCard}>
-              <Text style={styles.vatTitle}>VAT Breakdown (24%)</Text>
-              <View style={styles.vatRow}>
-                <Text style={styles.vatLabel}>Gross</Text>
-                <Text style={styles.vatValue}>{grossNum.toFixed(2)} €</Text>
-              </View>
-              <View style={styles.vatRow}>
-                <Text style={styles.vatLabel}>Net</Text>
-                <Text style={styles.vatValue}>{net.toFixed(2)} €</Text>
-              </View>
-              <View style={styles.vatRow}>
-                <Text style={styles.vatLabel}>VAT</Text>
-                <Text style={[styles.vatValue, { color: Colors.warning }]}>{vat.toFixed(2)} €</Text>
-              </View>
+              <Text style={styles.vatTitle}>VAT BREAKDOWN (24%)</Text>
+              <View style={styles.vatRow}><Text style={styles.vatLabel}>Gross</Text><Text style={styles.vatValue}>{grossNum.toFixed(2)} €</Text></View>
+              <View style={styles.vatRow}><Text style={styles.vatLabel}>Net</Text><Text style={styles.vatValue}>{net.toFixed(2)} €</Text></View>
+              <View style={styles.vatRow}><Text style={styles.vatLabel}>VAT</Text><Text style={[styles.vatValue, { color: Colors.warning }]}>{vat.toFixed(2)} €</Text></View>
               {pricePerLiter > 0 && (
                 <View style={[styles.vatRow, { marginTop: 4 }]}>
                   <Text style={styles.vatLabel}>Price/L</Text>
@@ -214,7 +198,7 @@ export default function ReviewScreen() {
           )}
         </ScrollView>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
           <TouchableOpacity
             style={[styles.saveBtn, missingRequired && styles.saveBtnDisabled]}
             onPress={handleSave}
@@ -223,10 +207,7 @@ export default function ReviewScreen() {
           >
             {saving
               ? <Text style={styles.saveBtnText}>Saving…</Text>
-              : <>
-                  <Ionicons name="checkmark-circle" size={20} color={Colors.background} />
-                  <Text style={styles.saveBtnText}>Approve & Save</Text>
-                </>
+              : <><Ionicons name="checkmark-circle" size={20} color={Colors.background} /><Text style={styles.saveBtnText}>Approve & Save</Text></>
             }
           </TouchableOpacity>
         </View>
@@ -244,11 +225,20 @@ const styles = StyleSheet.create({
   },
   backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: FontSize.lg, fontWeight: '600', color: Colors.text },
-  content: { paddingHorizontal: Spacing.xl, paddingBottom: 120, paddingTop: Spacing.lg },
-  sectionLabel: {
-    fontSize: FontSize.xs, fontWeight: '700', color: Colors.subtle,
-    letterSpacing: 1.2, marginBottom: Spacing.sm,
+  content: { paddingHorizontal: Spacing.xl, paddingTop: Spacing.lg },
+  imgWrap: {
+    borderRadius: Radius.lg, overflow: 'hidden',
+    borderWidth: 1, borderColor: Colors.border,
+    marginBottom: Spacing.lg, backgroundColor: Colors.surface,
   },
+  receiptImg: { width: '100%', height: 200 },
+  receiptImgExpanded: { height: 420 },
+  imgHint: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 4, paddingVertical: 6, borderTopWidth: 1, borderTopColor: Colors.border,
+  },
+  imgHintText: { fontSize: FontSize.xs, color: Colors.muted },
+  sectionLabel: { fontSize: FontSize.xs, fontWeight: '700', color: Colors.subtle, letterSpacing: 1.2, marginBottom: Spacing.sm },
   fieldWrap: { marginBottom: Spacing.md },
   fieldLabel: { fontSize: FontSize.xs, color: Colors.muted, fontWeight: '500', marginBottom: 6 },
   fieldInput: {
@@ -258,10 +248,7 @@ const styles = StyleSheet.create({
   },
   fieldInputWarning: { borderColor: Colors.warning },
   toggleRow: { flexDirection: 'row', gap: Spacing.sm },
-  toggleBtn: {
-    flex: 1, height: 48, borderRadius: Radius.md, borderWidth: 1.5,
-    alignItems: 'center', justifyContent: 'center',
-  },
+  toggleBtn: { flex: 1, height: 48, borderRadius: Radius.md, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   toggleText: { fontSize: FontSize.sm, fontWeight: '600' },
   warningBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -270,12 +257,6 @@ const styles = StyleSheet.create({
     padding: Spacing.md, marginBottom: Spacing.lg,
   },
   warningText: { fontSize: FontSize.sm, color: Colors.warning, flex: 1 },
-  infoBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: Colors.surface, borderRadius: Radius.md,
-    padding: Spacing.md, marginBottom: Spacing.lg,
-  },
-  infoText: { fontSize: FontSize.sm, color: Colors.muted },
   vatCard: {
     backgroundColor: Colors.card, borderRadius: Radius.lg, borderWidth: 1,
     borderColor: Colors.border, padding: Spacing.lg, marginTop: Spacing.lg, gap: 8,
@@ -287,7 +268,7 @@ const styles = StyleSheet.create({
   footer: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: Colors.background, borderTopWidth: 1, borderTopColor: Colors.border,
-    paddingHorizontal: Spacing.xl, paddingTop: Spacing.lg, paddingBottom: 32,
+    paddingHorizontal: Spacing.xl, paddingTop: Spacing.lg,
   },
   saveBtn: {
     height: 52, borderRadius: Radius.md, backgroundColor: Colors.success,
