@@ -146,7 +146,6 @@ export default function DashboardScreen() {
           <Card style={styles.totalCard}>
             <Text style={styles.totalLabel}>{t('net')} ({t('totalSpent').toLowerCase()})</Text>
             <Text style={styles.totalNet}>{summary.combined.netAmount.toFixed(2)} €</Text>
-            <Text style={styles.totalGross}>{t('gross')}: {summary.combined.grossAmount.toFixed(2)} €</Text>
 
             <View style={styles.divider} />
 
