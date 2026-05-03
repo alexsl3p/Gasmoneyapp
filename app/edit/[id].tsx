@@ -74,8 +74,9 @@ export default function EditScreen() {
       await updateReceipt(updated);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
-    } catch {
-      Alert.alert('Error', 'Could not update receipt.');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      Alert.alert('Save failed', msg);
     } finally {
       setSaving(false);
     }

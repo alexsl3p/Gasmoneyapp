@@ -122,7 +122,8 @@ export default function ReviewScreen() {
       router.dismissAll();
       router.replace('/(tabs)/');
     } catch (e) {
-      Alert.alert('Error', 'Could not save receipt. Please try again.');
+      const msg = e instanceof Error ? e.message : String(e);
+      Alert.alert('Save failed', msg);
     } finally {
       setSaving(false);
     }

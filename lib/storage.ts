@@ -9,8 +9,8 @@ let _db: SQLite.SQLiteDatabase | null = null;
 async function getDb(): Promise<SQLite.SQLiteDatabase> {
   if (_db) return _db;
   _db = await SQLite.openDatabaseAsync(DB_NAME);
+  await _db.execAsync('PRAGMA journal_mode = WAL;');
   await _db.execAsync(`
-    PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS receipts (
       id TEXT PRIMARY KEY,
       date TEXT NOT NULL,
