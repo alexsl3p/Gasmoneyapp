@@ -152,8 +152,8 @@ export default function DashboardScreen() {
 
             <View style={styles.totalRow}>
               <View style={styles.totalStat}>
-                <Text style={styles.totalStatLabel}>{t('vat')} (24%)</Text>
-                <Text style={[styles.totalStatValue, { color: Colors.warning }]}>{summary.combined.vatAmount.toFixed(2)} €</Text>
+                <Text style={styles.totalStatLabel}>{t('gross')}</Text>
+                <Text style={styles.totalStatValue}>{summary.combined.grossAmount.toFixed(2)} €</Text>
               </View>
               <View style={styles.totalStatDivider} />
               <View style={styles.totalStat}>
@@ -162,8 +162,8 @@ export default function DashboardScreen() {
               </View>
               <View style={styles.totalStatDivider} />
               <View style={styles.totalStat}>
-                <Text style={styles.totalStatLabel}>VAT {t('saved')}</Text>
-                <Text style={[styles.totalStatValue, { color: Colors.success }]}>−{vatSaved.toFixed(2)} €</Text>
+                <Text style={styles.totalStatLabel}>{t('vat')} (24%)</Text>
+                <Text style={[styles.totalStatValue, { color: Colors.warning }]}>{summary.combined.vatAmount.toFixed(2)} €</Text>
               </View>
             </View>
           </Card>
