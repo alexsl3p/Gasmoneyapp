@@ -2,6 +2,7 @@ import React from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/theme';
 
@@ -26,6 +27,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
 export default function RootLayout() {
   return (
     <ErrorBoundary>
+      <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.background }}>
         <StatusBar style="light" backgroundColor={Colors.background} />
         <Stack
@@ -41,6 +43,7 @@ export default function RootLayout() {
           <Stack.Screen name="edit/[id]" options={{ animation: 'slide_from_right' }} />
         </Stack>
       </GestureHandlerRootView>
+      </SafeAreaProvider>
     </ErrorBoundary>
   );
 }
