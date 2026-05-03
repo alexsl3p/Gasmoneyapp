@@ -128,13 +128,13 @@ export default function HistoryScreen() {
                   {r.station && <Text style={styles.receiptStation}>{r.station}</Text>}
                   <View style={styles.receiptStats}>
                     <View style={styles.statItem}>
-                      <Text style={styles.statVal}>{r.grossAmount.toFixed(2)} €</Text>
-                      <Text style={styles.statLbl}>Gross</Text>
+                      <Text style={styles.statVal}>{r.netAmount.toFixed(2)} €</Text>
+                      <Text style={styles.statLbl}>Net</Text>
                     </View>
                     <View style={[styles.statDivider]} />
                     <View style={styles.statItem}>
-                      <Text style={styles.statVal}>{r.netAmount.toFixed(2)} €</Text>
-                      <Text style={styles.statLbl}>Net</Text>
+                      <Text style={styles.statVal}>{r.grossAmount.toFixed(2)} €</Text>
+                      <Text style={styles.statLbl}>Gross</Text>
                     </View>
                     <View style={styles.statDivider} />
                     <View style={styles.statItem}>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
-  ScrollView, Alert, KeyboardAvoidingView, Platform,
+  ScrollView, Alert, KeyboardAvoidingView, Platform, Image,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,6 +42,7 @@ export default function EditScreen() {
   const [liters, setLiters] = useState('');
   const [grossAmount, setGrossAmount] = useState('');
   const [saving, setSaving] = useState(false);
+  const [imgExpanded, setImgExpanded] = useState(false);
 
   useEffect(() => {
     getReceiptById(id).then(r => {
@@ -118,6 +119,20 @@ export default function EditScreen() {
         </View>
 
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          {receipt.imageUri ? (
+            <TouchableOpacity onPress={() => setImgExpanded(e => !e)} activeOpacity={0.85} style={styles.imgWrap}>
+              <Image
+                source={{ uri: receipt.imageUri }}
+                style={[styles.receiptImg, imgExpanded && styles.receiptImgExpanded]}
+                resizeMode="contain"
+              />
+              <View style={styles.imgHint}>
+                <Ionicons name={imgExpanded ? 'chevron-up' : 'chevron-down'} size={12} color={Colors.muted} />
+                <Text style={styles.imgHintText}>{imgExpanded ? 'Collapse' : 'Tap to expand screenshot'}</Text>
+              </View>
+            </TouchableOpacity>
+          ) : null}
+
           <Text style={styles.sectionLabel}>DATE & LOCATION</Text>
           <Field label="Date" value={date} onChangeText={setDate} />
           <Field label="Time" value={time} onChangeText={setTime} />
@@ -197,6 +212,11 @@ const styles = StyleSheet.create({
   toggleBtn: { flex: 1, height: 48, borderRadius: Radius.md, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   toggleText: { fontSize: FontSize.sm, fontWeight: '600' },
   vatCard: { backgroundColor: Colors.card, borderRadius: Radius.lg, borderWidth: 1, borderColor: Colors.border, padding: Spacing.lg, marginTop: Spacing.lg, gap: 8 },
+  imgWrap: { borderRadius: Radius.lg, overflow: 'hidden', borderWidth: 1, borderColor: Colors.border, marginBottom: Spacing.lg, backgroundColor: Colors.surface },
+  receiptImg: { width: '100%', height: 200 },
+  receiptImgExpanded: { height: 420 },
+  imgHint: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 6, borderTopWidth: 1, borderTopColor: Colors.border },
+  imgHintText: { fontSize: FontSize.xs, color: Colors.muted },
   vatTitle: { fontSize: FontSize.xs, fontWeight: '700', color: Colors.subtle, letterSpacing: 1, marginBottom: 4 },
   vatRow: { flexDirection: 'row', justifyContent: 'space-between' },
   vatLabel: { fontSize: FontSize.sm, color: Colors.muted },
