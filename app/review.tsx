@@ -6,6 +6,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { t } from '@/lib/i18n';
 import { Colors, Spacing, FontSize, Radius } from '@/constants/theme';
 import { saveReceipt } from '@/lib/storage';
 import { calculateVat } from '@/lib/vat';
@@ -74,6 +75,7 @@ export default function ReviewScreen() {
     imageUri: string; rawOcrText: string;
     date: string; time: string; station: string;
     fuelType: string; liters: string; grossAmount: string;
+    queue: string;
   }>();
 
   const [date, setDate] = useState(params.date ?? '');
@@ -119,6 +121,28 @@ export default function ReviewScreen() {
       };
       await saveReceipt(receipt);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // If there's a queue of remaining receipts, go to next review
+      if (params.queue) {
+        const remaining = JSON.parse(params.queue) as Array<{uri: string; raw: string; parsed: any}>;
+        if (remaining.length > 0) {
+          const next = remaining[0];
+          router.replace({
+            pathname: '/review',
+            params: {
+              imageUri: next.uri,
+              rawOcrText: next.raw,
+              date: next.parsed.date ?? '',
+              time: next.parsed.time ?? '',
+              station: next.parsed.station ?? '',
+              fuelType: next.parsed.fuelType ?? '',
+              liters: next.parsed.liters?.toString() ?? '',
+              grossAmount: next.parsed.grossAmount?.toString() ?? '',
+              queue: remaining.length > 1 ? JSON.stringify(remaining.slice(1)) : '',
+            },
+          });
+          return;
+        }
+      }
       router.dismissAll();
       router.replace('/(tabs)/');
     } catch (e) {
