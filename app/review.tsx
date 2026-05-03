@@ -172,15 +172,15 @@ export default function ReviewScreen() {
             </View>
           )}
 
-          <Text style={styles.sectionLabel}>DATE & LOCATION</Text>
-          <Field label="Date" value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" warning={!date} />
-          <Field label="Time" value={time} onChangeText={setTime} placeholder="HH:mm" />
-          <Field label="Station" value={station} onChangeText={setStation} placeholder="e.g. Pärnu ATM" />
-
-          <Text style={[styles.sectionLabel, { marginTop: Spacing.lg }]}>FUEL DETAILS</Text>
+          <Text style={styles.sectionLabel}>FUEL DETAILS</Text>
           <FuelToggle value={fuelType} onChange={setFuelType} />
           <Field label="Liters" value={liters} onChangeText={setLiters} placeholder="0.00" keyboardType="decimal-pad" warning={litersNum === 0} />
           <Field label="Paid (€)" value={grossAmount} onChangeText={setGrossAmount} placeholder="0.00" keyboardType="decimal-pad" warning={grossNum === 0} />
+
+          <Text style={[styles.sectionLabel, { marginTop: Spacing.lg }]}>DATE & LOCATION</Text>
+          <Field label="Date" value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" warning={!date} />
+          <Field label="Time" value={time} onChangeText={setTime} placeholder="HH:mm" />
+          <Field label="Station" value={station} onChangeText={setStation} placeholder="e.g. Pärnu ATM" />
 
           {grossNum > 0 && (
             <View style={styles.vatCard}>

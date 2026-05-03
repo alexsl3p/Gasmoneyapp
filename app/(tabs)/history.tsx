@@ -80,7 +80,8 @@ export default function HistoryScreen() {
 
       {/* Month filter */}
       {months.length > 0 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.monthScroll} contentContainerStyle={styles.monthList}>
+        <View style={styles.monthScrollContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.monthList}>
           <TouchableOpacity
             onPress={() => setFilterMonth(null)}
             style={[styles.monthChip, filterMonth === null && styles.monthChipActive]}
@@ -99,6 +100,7 @@ export default function HistoryScreen() {
             </TouchableOpacity>
           ))}
         </ScrollView>
+        </View>
       )}
 
       <FlatList
@@ -169,8 +171,8 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.surface,
   },
   filterChipText: { fontSize: FontSize.xs, fontWeight: '600', letterSpacing: 0.3 },
-  monthScroll: { marginBottom: Spacing.md, flexGrow: 0 },
-  monthList: { paddingHorizontal: Spacing.xl, gap: Spacing.xs, paddingVertical: 2 },
+  monthScrollContainer: { height: 44, marginBottom: Spacing.md },
+  monthList: { paddingHorizontal: Spacing.xl, gap: Spacing.xs, alignItems: 'center' },
   monthChip: {
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: Radius.full,
     backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border,

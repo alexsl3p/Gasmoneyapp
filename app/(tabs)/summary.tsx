@@ -24,8 +24,8 @@ function SummarySection({ label, summary, accent }: { label: string; summary: an
         <Text style={[styles.fuelSectionTitle, { color: accent }]}>{label}</Text>
         <View style={styles.fuelGrid}>
           {[
-            ['Gross', `${summary.grossAmount.toFixed(2)} €`],
             ['Net', `${summary.netAmount.toFixed(2)} €`],
+            ['Gross', `${summary.grossAmount.toFixed(2)} €`],
             ['VAT', `${summary.vatAmount.toFixed(2)} €`],
             ['Liters', `${summary.liters.toFixed(2)} L`],
             ['Avg €/L', `${summary.avgPricePerLiter.toFixed(3)}`],
