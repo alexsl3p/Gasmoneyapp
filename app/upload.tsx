@@ -156,7 +156,7 @@ export default function UploadScreen() {
                     <>
                       {r.parsed.date && <Text style={styles.resultVal}>{r.parsed.date}{r.parsed.time ? ` · ${r.parsed.time}` : ''}</Text>}
                       {r.parsed.station && <Text style={styles.resultStation}>{r.parsed.station}</Text>}
-                      {r.parsed.fuelType && <Text style={styles.resultFuel}>Bensiin {r.parsed.fuelType}</Text>}
+                      {r.parsed.fuelType && <Text style={[styles.resultFuel, { color: r.parsed.fuelType === '95' ? Colors.fuel95 : Colors.fuel98 }]}>Bensiin {r.parsed.fuelType}</Text>}
                       {r.parsed.liters != null && <Text style={styles.resultDetail}>{r.parsed.liters} L · {r.parsed.grossAmount} €</Text>}
                     </>
                   ) : (
